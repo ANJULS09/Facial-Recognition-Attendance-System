@@ -1,186 +1,193 @@
 # Facial Recognition & Attendance System
 
-A real-time, webcam-based attendance system built with Python, OpenCV and `face_recognition` (dlib). It learns faces from a folder of photos, recognises people live on camera, and logs each person's attendance to a CSV file — with a built-in playground of 14 OpenCV image filters.
+A real-time, webcam-based attendance system built with Python, OpenCV and [`face_recognition`](https://github.com/ageitgey/face_recognition) (dlib). Enrol people by dropping their photos in a folder, point a camera at the room, and each recognised person is logged to a CSV file — once per day.
 
 ## Features
 
-- **Live face recognition** from the default webcam, with a labelled bounding box around every recognised face
-- **Automatic attendance logging** to `Attendance.csv` (name + time), one entry per person
-- **Zero training step** — add a photo named after a person to `ImagesAttendance/` and they're enrolled
-- **Fast processing** — frames are downscaled to 25% before detection, then boxes are scaled back up
-- **Image-processing playground** — switch between 14 OpenCV filters at runtime with a single key press (grayscale, histogram equalisation, blurs, edge detection, morphology, thresholding, sharpening)
-- **Screenshot capture** with one key press
-- **Helper scripts** for checking the camera and for a minimal two-image face comparison demo
+- **Live face recognition** from any webcam, with a green box and name on known faces and a red `UNKNOWN` box on strangers
+- **Automatic attendance logging** to a CSV (`Name,Date,Time`) with one entry per person per day
+- **No training step** — add a photo named after a person and they're enrolled; use a folder of photos for better accuracy
+- **Fast** — frames are downscaled before detection, and recognition can run on every Nth frame
+- **Configurable** — camera, match tolerance, detection scale, and file locations are all command-line options
+- **Image-processing playground** — switch between 14 OpenCV filters live with a key press; recognition keeps working underneath
+- **`report` command** to print attendance for a day or for all days
+- **Tested and linted** — unit tests, Ruff, and GitHub Actions CI
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    A[ImagesAttendance/<br/>one photo per person] --> B[Encode faces<br/>128-d vectors]
-    C[Webcam frame] --> D[Downscale to 25%<br/>BGR to RGB]
+    A[Enrolment photos] --> B[Encode faces<br/>128-d vectors]
+    C[Webcam frame] --> D[Downscale + BGR to RGB]
     D --> E[Detect faces<br/>HOG]
-    E --> F[Encode faces<br/>128-d vectors]
-    B --> G[Compare against<br/>known encodings]
+    E --> F[Encode faces]
+    B --> G[Nearest known face<br/>by Euclidean distance]
     F --> G
-    G -->|closest match within<br/>tolerance 0.6| H[Draw box + name]
-    H --> I[Attendance.csv<br/>name, time]
+    G -->|within tolerance| H[Known: green box + name]
+    G -->|otherwise| I[Unknown: red box]
+    H --> J[(attendance.csv<br/>name, date, time)]
 ```
 
-1. **Enrol** — at start-up every image in `ImagesAttendance/` is loaded and converted to a 128-dimensional face encoding. The file name (without extension) becomes the person's name.
-2. **Capture** — each webcam frame is shrunk to 25% of its size and converted from BGR to RGB.
-3. **Detect & encode** — `face_recognition` locates every face in the frame and computes an encoding for each.
-4. **Match** — each encoding is compared with all known encodings. The one with the smallest Euclidean distance wins, provided it is within the library's default tolerance of `0.6`.
-5. **Annotate & log** — a green box and the upper-cased name are drawn on the frame, and the name is written to `Attendance.csv` if it isn't already there.
+1. **Enrol** — every image in the enrolment folder becomes a 128-dimensional face encoding, labelled with the person's name.
+2. **Detect & encode** — each camera frame is shrunk (default 25%), and every face found is encoded.
+3. **Match** — an encoding is matched to the closest enrolled face, provided its distance is within the tolerance (default `0.6`; lower is stricter).
+4. **Log** — a matched person is written to the attendance file the first time they're seen each day.
 
-## Tech stack
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the module-by-module breakdown.
 
-| Component | Purpose |
-|---|---|
-| Python 3.9+ | Language |
-| [OpenCV](https://opencv.org/) (`opencv-python`) | Camera capture, drawing, image filters |
-| [face_recognition](https://github.com/ageitgey/face_recognition) | Face detection, encoding and comparison |
-| [dlib](http://dlib.net/) | Underlying face detector and deep-learning model |
-| NumPy | Array maths and distance handling |
+## Installation
 
-## Project structure
-
-```
-Facial-Recognition-Attendance-System/
-├── AttendanceProject.py     # Main app: live recognition, attendance logging, filters
-├── Basics.py                # Minimal demo: compare two images and print match + distance
-├── camera.py                # Quick check that the webcam opens
-├── Attendance.sample.csv    # Blank attendance template (copy to Attendance.csv)
-├── ImagesAttendance/        # Your enrolment photos go here (contents are git-ignored)
-├── requirements.txt
-├── LICENSE
-└── README.md
-```
-
-## Getting started
-
-### 1. Clone
-
-```bash
-git clone https://github.com/<your-username>/Facial-Recognition-Attendance-System.git
-cd Facial-Recognition-Attendance-System
-```
-
-### 2. Create a virtual environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-`face_recognition` depends on `dlib`, which is compiled during installation and needs **CMake** and a C++ compiler.
+Requires **Python 3.10+**. `face_recognition` depends on `dlib`, which compiles during install and needs **CMake** and a C++ compiler:
 
 ```bash
 # macOS
-brew install cmake
-xcode-select --install           # if you don't already have the command line tools
-
+brew install cmake && xcode-select --install
 # Ubuntu / Debian
 sudo apt install cmake build-essential
-
-# Windows: install CMake and the "Desktop development with C++" workload from Visual Studio Build Tools
+# Windows: CMake + "Desktop development with C++" from Visual Studio Build Tools
 ```
 
 Then:
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/<your-username>/Facial-Recognition-Attendance-System.git
+cd Facial-Recognition-Attendance-System
+
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+pip install -e .                   # installs the `face-attendance` command
 ```
 
-### 4. Add people
+## Usage
 
-Put one clear, front-facing photo per person in `ImagesAttendance/`. **The file name is the person's name.**
+### 1. Enrol people
+
+Put photos in `ImagesAttendance/`. **The name comes from the file or folder name.**
 
 ```
 ImagesAttendance/
-├── Jane Doe.jpg
-└── John Smith.png
+├── Jane Doe.jpg            # one photo  -> JANE DOE
+└── John Smith/             # several photos -> JOHN SMITH
+    ├── front.jpg
+    └── side.png
 ```
 
-Use one face per photo, good lighting, and no sunglasses or heavy occlusion.
+Use clear, well-lit photos with one face each. Several photos per person (in a folder) improve accuracy. Supported formats: `.jpg`, `.jpeg`, `.png`, `.bmp`. Photos with no detectable face are skipped with a warning.
 
-### 5. Create the attendance file
+### 2. Run
 
 ```bash
-cp Attendance.sample.csv Attendance.csv
+face-attendance run
 ```
 
-### 6. Check your camera (optional)
+A window opens showing the live feed. People are logged to `data/attendance.csv` as they're recognised. Press **`q`** to quit.
+
+> **macOS:** the first run asks for camera access for your terminal or IDE. If the camera won't open, check *System Settings → Privacy & Security → Camera*.
+
+### 3. View attendance
 
 ```bash
-python camera.py
+face-attendance report                    # today
+face-attendance report --date 2025-03-01  # a specific day
+face-attendance report --all              # everything
 ```
 
-### 7. Run
+The file itself is plain CSV:
 
-```bash
-python AttendanceProject.py
+```csv
+Name,Date,Time
+JANE DOE,2025-03-01,09:02:41
+JOHN SMITH,2025-03-01,09:05:13
 ```
 
-A window titled **Filter View** opens with the live feed. Recognised people get a green box and their name, and are added to `Attendance.csv`. Press `q` to quit.
+### Commands
 
-> **macOS:** the first run will prompt for camera access for your terminal or IDE. If the camera won't open, check *System Settings → Privacy & Security → Camera*.
+| Command | What it does |
+|---|---|
+| `face-attendance run` | Live recognition and attendance logging |
+| `face-attendance report` | Print attendance records |
+| `face-attendance check-camera` | Confirm the webcam opens and show its resolution |
+| `face-attendance compare A.jpg B.jpg` | Compare the first face in two images (match + distance) |
 
-## Controls
+`python -m facial_attendance ...` works too. Add `-v` before the command for debug logging.
 
-Press these keys while the **Filter View** window is focused.
+### Options for `run`
+
+| Option | Default | Description |
+|---|---|---|
+| `--known-dir` | `ImagesAttendance` | Folder of enrolment photos |
+| `--attendance-file` | `data/attendance.csv` | CSV log (created if missing) |
+| `--screenshot-dir` | `screenshots` | Where `p` saves screenshots |
+| `--camera` | `0` | Camera index |
+| `--tolerance` | `0.6` | Max face distance for a match; lower is stricter |
+| `--scale` | `0.25` | Frame scale for detection, `0`–`1`; higher is more accurate for small or distant faces but slower |
+| `--process-every` | `1` | Recognise on every Nth frame to save CPU |
+
+### Live controls
+
+Press these while the video window is focused. The recognition overlay is drawn on top of every filter, and attendance is logged in every mode.
 
 | Key | Action | Key | Action |
 |---|---|---|---|
-| `o` | Original image (with recognition overlay) | `c` | Canny edge detection |
-| `g` | Grayscale | `l` | Laplacian edge detection |
+| `o` | Original | `c` | Canny edges |
+| `g` | Grayscale | `l` | Laplacian edges |
 | `e` | Histogram equalisation | `x` | Sobel X |
 | `s` | Gaussian blur | `y` | Sobel Y |
 | `m` | Median blur | `d` | Dilation |
 | `b` | Bilateral filter | `r` | Erosion |
-| `h` | Adaptive thresholding | `z` | Morphological gradient |
-| `w` | Sharpening | `p` | Save screenshot (`screenshot_N.png`) |
+| `h` | Adaptive threshold | `z` | Morphological gradient |
+| `w` | Sharpening | `p` | Save screenshot |
 | `q` | Quit | | |
 
-Recognition always runs on the raw camera frame, so attendance keeps being logged in every filter mode. The name boxes are only drawn in the original view (`o`).
+## Project structure
 
-## Attendance output
-
-`Attendance.csv` has one row per person:
-
-```csv
-Name,Time
-JANE DOE,09:02:41
-JOHN SMITH,09:05:13
+```
+.
+├── src/facial_attendance/
+│   ├── cli.py            # `face-attendance` command and argument parsing
+│   ├── app.py            # live webcam loop and on-screen drawing
+│   ├── faces.py          # loads enrolment photos into face encodings
+│   ├── recognizer.py     # detection + nearest-face matching
+│   ├── attendance.py     # CSV attendance log
+│   ├── filters.py        # the 14 OpenCV filters
+│   ├── tools.py          # check-camera and compare helpers
+│   └── config.py         # defaults
+├── tests/                # pytest suite
+├── docs/ARCHITECTURE.md
+├── .github/workflows/    # CI
+├── ImagesAttendance/     # your enrolment photos (git-ignored)
+├── pyproject.toml
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
-A name is only written if it isn't already in the file. To start a new session, delete the rows below the header (or copy `Attendance.sample.csv` over `Attendance.csv` again).
+## Development
 
-## Other scripts
+```bash
+pip install -e . -r requirements-dev.txt
+pytest          # tests use a fake face backend, so they run without a camera
+ruff check .    # lint
+```
 
-- **`camera.py`** — opens the default camera and reports whether it worked.
-- **`Basics.py`** — encodes two images, draws the detected face on each, and prints whether they match along with the face distance (lower is more similar). Edit the two image paths at the top of the file to point at your own test images.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more.
 
 ## Privacy
 
-This project processes faces, which are biometric data. The repository deliberately **does not** include any enrolment photos, test images, screenshots or attendance records — those paths are in `.gitignore`. If you use this system with other people, get their consent first, store the photos and attendance file securely, and never commit them to a public repository.
+This project processes faces, which are biometric data. The repository deliberately does **not** include any enrolment photos, screenshots or attendance records; `ImagesAttendance/`, `data/` and `screenshots/` are git-ignored. If you use it with other people, get their consent first, store the photos and logs securely, and never commit them to a public repository.
 
-## Known limitations
+## Limitations
 
-- Attendance rows store **time only**, not the date, and a person is logged once per file rather than once per day.
-- Recognition uses a single photo per person; accuracy drops with extreme angles, poor lighting or masks.
-- It is not liveness-aware — a printed photo or a phone screen can be recognised as a real person, so it is unsuitable for security-critical use.
-- Only the default camera (index `0`) is used.
+- **Not spoof-proof** — there is no liveness check, so a printed photo or a phone screen can be recognised as a real person. Don't use it for security-critical access control.
+- Accuracy drops with extreme angles, poor lighting, masks, or very small faces. Try `--scale 0.5` for people far from the camera.
+- One camera at a time.
 
 ## Roadmap
 
-- [ ] Date-stamped attendance with one entry per person per day
-- [ ] Multiple enrolment photos per person
 - [ ] Liveness / anti-spoofing check
-- [ ] Configurable camera index and match tolerance
-- [ ] Simple GUI or web dashboard for viewing attendance
+- [ ] Web dashboard for viewing attendance
 - [ ] Export to Excel or a database
+- [ ] Multiple cameras / video-file input
 
 ## Author
 
@@ -192,6 +199,4 @@ Released under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- [Adam Geitgey's `face_recognition`](https://github.com/ageitgey/face_recognition)
-- [dlib](http://dlib.net/) by Davis King
-- [OpenCV](https://opencv.org/)
+[face_recognition](https://github.com/ageitgey/face_recognition) by Adam Geitgey · [dlib](http://dlib.net/) by Davis King · [OpenCV](https://opencv.org/)

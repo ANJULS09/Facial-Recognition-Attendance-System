@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # dlib is slow to build and the tests never call it (the backend is faked),
+      # so CI installs only what the tests import.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install "numpy>=1.24,<2" opencv-python-headless pytest ruff
+          pip install -e . --no-deps
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: pytest

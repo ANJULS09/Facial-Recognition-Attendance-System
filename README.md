@@ -1,5 +1,9 @@
 # Facial Recognition & Attendance System
 
+[![CI](https://github.com/ANJULS09/Facial-Recognition-Attendance-System/actions/workflows/ci.yml/badge.svg)](https://github.com/ANJULS09/Facial-Recognition-Attendance-System/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+
 A real-time, webcam-based attendance system built with Python, OpenCV and [`face_recognition`](https://github.com/ageitgey/face_recognition) (dlib). Enrol people by dropping their photos in a folder, point a camera at the room, and each recognised person is logged to a CSV file — once per day.
 
 ## Features
@@ -50,7 +54,7 @@ sudo apt install cmake build-essential
 Then:
 
 ```bash
-git clone https://github.com/<your-username>/Facial-Recognition-Attendance-System.git
+git clone https://github.com/ANJULS09/Facial-Recognition-Attendance-System.git
 cd Facial-Recognition-Attendance-System
 
 python3 -m venv .venv

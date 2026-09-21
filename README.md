@@ -40,7 +40,7 @@ flowchart LR
 3. **Match** — an encoding is matched to the closest enrolled face, provided its distance is within the tolerance (default `0.6`; lower is stricter).
 4. **Log** — a matched person is written to the attendance file the first time they're seen each day.
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the module-by-module breakdown.
+**New here, or coming back after a long time?** Read the [Project Guide](docs/PROJECT_GUIDE.md): a head-to-toe walkthrough, including how to rebuild everything on a fresh computer. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has the module-by-module design notes.
 
 ## Installation
 
@@ -190,7 +190,8 @@ npx vercel --prod
 │   ├── public/           # index.html, js/, css/, vendored face-api + models
 │   ├── tests/            # node:test unit tests
 │   └── vercel.json
-├── docs/ARCHITECTURE.md
+├── docs/                 # PROJECT_GUIDE.md (start here) and ARCHITECTURE.md
+├── legacy/               # the original scripts, unchanged, for reference
 ├── .github/workflows/    # CI
 ├── ImagesAttendance/     # your enrolment photos (git-ignored)
 ├── pyproject.toml

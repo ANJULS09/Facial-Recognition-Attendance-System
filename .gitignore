@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# IDEs / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Private data: faces, screenshots and attendance records
+ImagesAttendance/*
+!ImagesAttendance/.gitkeep
+ImagesBasic/
+Attendance.csv
+screenshot_*.png

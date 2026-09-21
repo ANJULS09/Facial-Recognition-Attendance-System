@@ -8,6 +8,10 @@ dist/
 .ruff_cache/
 .coverage
 
+# Node / Vercel
+node_modules/
+.vercel/
+
 # Virtual environments
 .venv/
 venv/

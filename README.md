@@ -14,6 +14,7 @@ A real-time, webcam-based attendance system built with Python, OpenCV and [`face
 - **Fast** — frames are downscaled before detection, and recognition can run on every Nth frame
 - **Configurable** — camera, match tolerance, detection scale, and file locations are all command-line options
 - **Image-processing playground** — switch between 14 OpenCV filters live with a key press; recognition keeps working underneath
+- **Browser version** that runs entirely client-side and deploys to Vercel
 - **`report` command** to print attendance for a day or for all days
 - **Tested and linted** — unit tests, Ruff, and GitHub Actions CI
 
@@ -144,6 +145,31 @@ Press these while the video window is focused. The recognition overlay is drawn 
 | `w` | Sharpening | `p` | Save screenshot |
 | `q` | Quit | | |
 
+## Web version (Vercel)
+
+The [`web/`](web) folder is a browser version of the same idea, deployed as a static site on [Vercel](https://vercel.com). The visitor's browser reads their webcam and does the recognition itself with [face-api](https://github.com/vladmandic/face-api) (128-d face descriptors and the same `0.6` default tolerance), so **no photos or attendance data are uploaded anywhere**; everything is kept in the browser's local storage.
+
+- Enrol people from photos or a camera snapshot, start the camera, and watch attendance fill in
+- One entry per person per day, downloadable as CSV
+- Delete all local data with one click
+
+The desktop app (`face-attendance`) stays the full-featured version: it has the 14 OpenCV filters, screenshots, and the CLI. The Python app can't run on Vercel itself, because it needs a local camera window and `dlib`.
+
+**Run it locally**
+
+```bash
+cd web
+npm start            # serves web/public on http://localhost:3000
+npm test             # unit tests for matching and attendance logic
+```
+
+**Deploy your own copy** — import this repository in Vercel and set **Root Directory** to `web` (no build command needed), or from a terminal:
+
+```bash
+cd web
+npx vercel --prod
+```
+
 ## Project structure
 
 ```
@@ -158,6 +184,10 @@ Press these while the video window is focused. The recognition overlay is drawn 
 │   ├── tools.py          # check-camera and compare helpers
 │   └── config.py         # defaults
 ├── tests/                # pytest suite
+├── web/                  # browser version (static site for Vercel)
+│   ├── public/           # index.html, js/, css/, vendored face-api + models
+│   ├── tests/            # node:test unit tests
+│   └── vercel.json
 ├── docs/ARCHITECTURE.md
 ├── .github/workflows/    # CI
 ├── ImagesAttendance/     # your enrolment photos (git-ignored)

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facial Recognition &amp; Attendance</title>
+  <meta name="description" content="Real-time face recognition attendance that runs entirely in your browser. Photos and attendance never leave your device.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Facial Recognition &amp; Attendance</h1>
+      <p class="sub">Runs entirely in your browser. Faces and attendance never leave your device.</p>
+    </div>
+    <span id="status" class="status" role="status">Loading face models…</span>
+  </header>
+
+  <main>
+    <section class="card wide" aria-labelledby="enrol-title">
+      <h2 id="enrol-title"><span class="step">1</span> Enrol people</h2>
+      <form id="enrol-form">
+        <label>Name
+          <input id="name" maxlength="60" autocomplete="off" placeholder="Jane Doe">
+        </label>
+        <label>Photos <small>(one clear, front-facing face each; several photos improve accuracy)</small>
+          <input id="photos" type="file" accept="image/*" multiple>
+        </label>
+        <div class="controls">
+          <button id="add-photos" type="submit" class="primary" disabled>Add photos</button>
+          <button id="snapshot" type="button" disabled>Use camera snapshot</button>
+        </div>
+      </form>
+      <p id="enrol-message" class="message" role="status"></p>
+      <ul id="people" class="people"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="camera-title">
+      <h2 id="camera-title"><span class="step">2</span> Live camera</h2>
+      <div class="stage">
+        <video id="video" playsinline muted></video>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+        <div id="placeholder">Camera is off</div>
+      </div>
+      <div class="controls">
+        <button id="toggle-camera" type="button" class="primary" disabled>Start camera</button>
+        <label class="inline">Tolerance
+          <input id="tolerance" type="range" min="0.3" max="0.8" step="0.01" value="0.6">
+          <output id="tolerance-value">0.60</output>
+        </label>
+      </div>
+      <p class="hint">Lower tolerance is stricter. Green = recognised, red = unknown.</p>
+    </section>
+
+    <section class="card" aria-labelledby="attendance-title">
+      <h2 id="attendance-title"><span class="step">3</span> Attendance</h2>
+      <div class="controls">
+        <label class="inline"><input id="show-all" type="checkbox"> Show all days</label>
+        <button id="export-csv" type="button" disabled>Download CSV</button>
+        <button id="clear-attendance" type="button" class="danger" disabled>Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table id="attendance-table" hidden>
+          <thead><tr><th>Name</th><th>Date</th><th>Time</th></tr></thead>
+          <tbody id="attendance-body"></tbody>
+        </table>
+      </div>
+      <p id="attendance-empty" class="empty">No one has been marked present yet.</p>
+      <p class="hint">Each person is logged once per day.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Face data and attendance are stored only in this browser (local storage). No images or
+      recordings are uploaded.
+      <button id="delete-all" type="button" class="link danger">Delete all local data</button>
+    </p>
+    <p>
+      Open source ·
+      <a href="https://github.com/ANJULS09/Facial-Recognition-Attendance-System">GitHub</a> ·
+      Face models from <a href="https://github.com/vladmandic/face-api">face-api</a> (MIT)
+    </p>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/face-api.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

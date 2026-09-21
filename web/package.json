@@ -1,0 +1,10 @@
+{
+  "name": "facial-attendance-web",
+  "private": true,
+  "type": "module",
+  "description": "Browser version of the Facial Recognition & Attendance System (static site, deployed on Vercel).",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "npx --yes serve public -l 3000"
+  }
+}

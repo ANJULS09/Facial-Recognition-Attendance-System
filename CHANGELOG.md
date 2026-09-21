@@ -5,6 +5,7 @@
 Restructured the original scripts into an installable package with a CLI, tests and CI.
 
 ### Added
+- Browser version in `web/` (client-side recognition, no uploads) ready to deploy on Vercel
 - `face-attendance` command with `run`, `report`, `check-camera` and `compare` subcommands
 - Options for camera index, match tolerance, detection scale, frame skipping, and file locations
 - Red `UNKNOWN` box for faces that match nobody

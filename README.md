@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 
+**🚀 [Live demo: facial-recognition-attendance-syste-mocha.vercel.app](https://facial-recognition-attendance-syste-mocha.vercel.app)** — runs in your browser, nothing is uploaded.
+
 A real-time, webcam-based attendance system built with Python, OpenCV and [`face_recognition`](https://github.com/ageitgey/face_recognition) (dlib). Enrol people by dropping their photos in a folder, point a camera at the room, and each recognised person is logged to a CSV file — once per day.
 
 ## Features
@@ -147,7 +149,7 @@ Press these while the video window is focused. The recognition overlay is drawn 
 
 ## Web version (Vercel)
 
-The [`web/`](web) folder is a browser version of the same idea, deployed as a static site on [Vercel](https://vercel.com). The visitor's browser reads their webcam and does the recognition itself with [face-api](https://github.com/vladmandic/face-api) (128-d face descriptors and the same `0.6` default tolerance), so **no photos or attendance data are uploaded anywhere**; everything is kept in the browser's local storage.
+The [`web/`](web) folder is a browser version of the same idea, deployed as a static site on [Vercel](https://facial-recognition-attendance-syste-mocha.vercel.app) — **[try it live](https://facial-recognition-attendance-syste-mocha.vercel.app)**. The visitor's browser reads their webcam and does the recognition itself with [face-api](https://github.com/vladmandic/face-api) (128-d face descriptors and the same `0.6` default tolerance), so **no photos or attendance data are uploaded anywhere**; everything is kept in the browser's local storage.
 
 - Enrol people from photos or a camera snapshot, start the camera, and watch attendance fill in
 - One entry per person per day, downloadable as CSV
